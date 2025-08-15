@@ -18,8 +18,8 @@ This project is a React-based floating chatbot widget that connects to a Node.js
 
 ### 1️⃣ Clone the repository
 ```bash
-git clone https://github.com/yourusername/ai-chatbot.git
-cd ai-chatbot
+git clone https://github.com/Amruth-empire/chat_bot.git
+cd chat_bot
 ```
 
 ### 2️⃣ Install dependencies
