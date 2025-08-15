@@ -1,6 +1,6 @@
 import express from "express";
-import fetch from "node-fetch";
 import dotenv from "dotenv";
+import fetch from "node-fetch";
 import cors from "cors";
 
 dotenv.config();
@@ -8,36 +8,33 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// POST /chat endpoint
-app.post("/chat", async (req, res) => {
-  try {
-    const payload = {
-      model: "gpt-4o-mini", // You can switch to gpt-5 if available
-      messages: req.body.messages
-    };
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
-      },
-      body: JSON.stringify(payload)
-    });
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GEMINI_API_KEY}`;
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      return res.status(400).json({ error: errorData.error.message });
+// Chatbot endpoint
+app.post("/api/chat", async (req, res) => {
+    const { payload } = req.body;
+
+    try {
+        const response = await fetch(GEMINI_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
+            return res.json({ text: data.candidates[0].content.parts[0].text });
+        } else {
+            return res.status(500).json({ error: "Invalid API response" });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "Server error" });
     }
-
-    const data = await response.json();
-    const reply = data.choices?.[0]?.message?.content || "";
-    res.json({ reply });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
 });
 
-app.listen(5000, () => {
-  console.log("✅ Backend running on http://localhost:5000");
-});
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
